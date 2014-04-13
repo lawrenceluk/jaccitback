@@ -70,15 +70,19 @@ class GameController < ApplicationController
 
 	def postgame
 		game = @user.game
-		p1 = game.players.to_a[0]
-		p2 = game.players.to_a[1]
-		if (p1.status == "postgame" && p2.status == "postgame") || (p1.status == "done" && p2.status == "done")
-			p1.update_attribute(:status, "done")
-			p2.update_attribute(:status, "done")
-			@message = "#{game.p1score} #{game.p2score}"
-			return
+		if game
+			p1 = game.players.to_a[0]
+			p2 = game.players.to_a[1]
+			if (p1.status == "postgame" && p2.status == "postgame") || (p1.status == "done" && p2.status == "done")
+				p1.update_attribute(:status, "done")
+				p2.update_attribute(:status, "done")
+				@message = "#{game.p1score} #{game.p2score}"
+				return
+			end
+			@message = "wait"
+		else 
+			@message = "cancel"
 		end
-		@message = "no"
 	end
 
 	def interrupt
