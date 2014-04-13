@@ -1,5 +1,7 @@
 class GameController < ApplicationController
 	before_filter :usercheck, :set_headers
+	skip_before_filter  :verify_authenticity_token
+	
 	def seek
 		if @user.game
 			@user.game.destroy
