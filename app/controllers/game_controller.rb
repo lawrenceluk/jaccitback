@@ -2,6 +2,9 @@ class GameController < ApplicationController
 	before_filter :usercheck
 
 	def seek
+		if @user.game
+			@user.game.destroy
+		end
 		@user.update_attribute(:status, "searching")
 	end
 
@@ -17,7 +20,7 @@ class GameController < ApplicationController
 			if rel.exists?
 				# get opponent
 				opp = rel.first
-				@message = "yes #{opp.username}"
+				@message = "#{@user.username} #{opp.username}"
 				# create game
 				game = Game.new
 				if game.save
@@ -30,14 +33,25 @@ class GameController < ApplicationController
 				@message = "no"
 			end
 		elsif @user.status == "matched"
-			@message = "matched"
+			pls = @user.game.players
+			# if inconsistency
+			if @user.game.players.first.status != @user.game.players.last.status
+				# destroy the other game
+				@user.game.players.first.update_attribute(:status, "none")
+				@user.game.players.last.update_attribute(:status, "none")
+				# back to queue
+				@user.update_attribute(:status, "searching")
+				@user.game.destroy
+				return
+			end
+			@message = "#{pls[0].username} #{pls[1].username}"
 		else
 			@message = "none"
 		end
 	end
 
 	def finished
-		if @user.status == "matched"
+		if @user.status == "matched" && @user.game
 			score = params[:score].to_i
 			game = @user.game
 			if (!game.p1score)
@@ -49,6 +63,7 @@ class GameController < ApplicationController
 			@user.update_attribute(:points, @user.points + score)
 			if score > @user.highscore
 				@user.update_attribute(:highscore, score)
+			end
 			@user.update_attribute(:status, "postgame")
 		end
 	end
@@ -60,9 +75,10 @@ class GameController < ApplicationController
 		if (p1.status == "postgame" && p2.status == "postgame") || (p1.status == "done" && p2.status == "done")
 			p1.update_attribute(:status, "done")
 			p2.update_attribute(:status, "done")
-			game.destroy
 			@message = "#{game.p1score} #{game.p2score}"
+			return
 		end
+		@message = "no"
 	end
 
 	def interrupt
