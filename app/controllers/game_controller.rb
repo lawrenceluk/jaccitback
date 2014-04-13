@@ -82,8 +82,10 @@ class GameController < ApplicationController
 	end
 
 	def interrupt
-		if @user.status == "matched"
-			puts @user.game
+		if @user.game
+			@user.game.players.first.update_attribute(:status, "none")
+			@user.game.players.last.update_attribute(:status, "none")
+			@user.game.destroy
 		end
 		@user.update_attribute(:status, "none")
 	end
