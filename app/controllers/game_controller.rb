@@ -1,7 +1,7 @@
 class GameController < ApplicationController
 	before_filter :usercheck, :set_headers
 	skip_before_filter  :verify_authenticity_token
-	
+
 	def seek
 		if @user.game
 			@user.game.destroy
@@ -17,7 +17,6 @@ class GameController < ApplicationController
       	# postgres
 				rel = Player.where.not(username: @user.username).where("status = 'searching'")
     	end
-			rel = Player.where.not(username: @user.username).where("status == 'searching'")
 			if rel.exists?
 				# get opponent
 				opp = rel.first
