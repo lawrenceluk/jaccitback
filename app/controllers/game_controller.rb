@@ -41,10 +41,14 @@ class GameController < ApplicationController
 			score = params[:score].to_i
 			game = @user.game
 			if (!game.p1score)
-				game.update_attribute(:p1score, params[:score])
+				game.update_attribute(:p1score, score)
 			else
-				game.update_attribute(:p2score, params[:score])
+				game.update_attribute(:p2score, score)
 			end
+			@user.update_attribute(:plays, @user.plays + 1)
+			@user.update_attribute(:points, @user.points + score)
+			if score > @user.highscore
+				@user.update_attribute(:highscore, score)
 			@user.update_attribute(:status, "postgame")
 		end
 	end
@@ -79,6 +83,10 @@ class GameController < ApplicationController
     else
 			@message = "created"
 			@user = Player.new(player_params)
+			@user.requests = 0
+			@user.plays = 0
+			@user.points = 0
+			@user.highscore = 0
 			@user.username = params[:username]
 			@user.save
 		end
